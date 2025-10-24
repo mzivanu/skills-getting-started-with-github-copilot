@@ -4,6 +4,37 @@ document.addEventListener("DOMContentLoaded", () => {
   const signupForm = document.getElementById("signup-form");
   const messageDiv = document.getElementById("message");
 
+  // Event delegation voor delete-icoon
+  activitiesList.addEventListener("click", async (event) => {
+    if (event.target.classList.contains("delete-participant")) {
+      const activity = event.target.getAttribute("data-activity");
+      const email = event.target.getAttribute("data-email");
+      if (activity && email) {
+        try {
+          const response = await fetch(`/activities/${encodeURIComponent(activity)}/unregister?email=${encodeURIComponent(email)}`, {
+            method: "POST"
+          });
+          const result = await response.json();
+          if (response.ok) {
+            messageDiv.textContent = result.message || "Deelnemer verwijderd.";
+            messageDiv.className = "success";
+            fetchActivities();
+          } else {
+            messageDiv.textContent = result.detail || "Verwijderen mislukt.";
+            messageDiv.className = "error";
+          }
+        } catch (error) {
+          messageDiv.textContent = "Verwijderen mislukt. Probeer opnieuw.";
+          messageDiv.className = "error";
+        }
+        messageDiv.classList.remove("hidden");
+        setTimeout(() => {
+          messageDiv.classList.add("hidden");
+        }, 4000);
+      }
+    }
+  });
+
   // Function to fetch activities from API
   async function fetchActivities() {
     try {
@@ -20,11 +51,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const spotsLeft = details.max_participants - details.participants.length;
 
+        // Create participants list HTML
+        const participantsList = details.participants.length > 0
+          ? `<div class="participants-section">
+               <strong>📋 Signed up participants:</strong>
+               <ul class="participants-list">
+                 ${details.participants.map(email => `
+                   <li>
+                     👤 ${email}
+                     <span class="delete-participant" title="Verwijder" data-activity="${name}" data-email="${email}">🗑️</span>
+                   </li>
+                 `).join('')}
+               </ul>
+             </div>`
+          : `<p class="no-participants">💡 <em>No participants yet. Be the first to sign up!</em></p>`;
+
         activityCard.innerHTML = `
           <h4>${name}</h4>
           <p>${details.description}</p>
           <p><strong>Schedule:</strong> ${details.schedule}</p>
           <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
+          ${participantsList}
         `;
 
         activitiesList.appendChild(activityCard);
