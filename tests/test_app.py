@@ -1,14 +1,14 @@
-def test_root_redirect():
-    response = client.get("/")
-    # FastAPI RedirectResponse geeft status 200 in TestClient, maar bevat een redirect-url
-    assert response.status_code in (200, 307)
-    assert str(response.url).endswith("/static/index.html")
 import pytest
 from fastapi.testclient import TestClient
 from src.app import app
 
 client = TestClient(app)
 
+def test_root_redirect():
+    response = client.get("/")
+    # FastAPI RedirectResponse geeft status 200 in TestClient, maar bevat een redirect-url
+    assert response.status_code in (200, 307)
+    assert str(response.url).endswith("/static/index.html")
 def test_get_activities():
     response = client.get("/activities")
     assert response.status_code == 200
