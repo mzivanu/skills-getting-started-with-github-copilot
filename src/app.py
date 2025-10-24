@@ -107,7 +107,6 @@ def signup_for_activity(activity_name: str, email: str):
     activity["participants"].append(email)
     return {"message": f"Signed up {email} for {activity_name}"}
 
- #Voeg de unregister endpoint toe aan het einde van het bestand
 
 @app.post("/activities/{activity_name}/unregister")
 def unregister_from_activity(activity_name: str, email: str):
